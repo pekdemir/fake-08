@@ -21,8 +21,12 @@ using namespace std;
 #define SAMPLESPERBUF (SAMPLERATE / 30)
 #define NUM_BUFFERS 2
 
-int _windowWidth = 128;
-int _windowHeight = 128;
+// int _windowWidth = 128;
+// int _windowHeight = 128;
+
+int _windowWidth = 1280;
+int _windowHeight = 720;
+
 
 
 int _screenWidth = 128;
@@ -186,9 +190,10 @@ void Host::setPlatformParams(
 
 
 void Host::oneTimeSetup(Audio* audio){
-    if (SDL_Init(SDL_INIT_EVERYTHING) != 0)
+    if (SDL_Init(SDL_INIT_TIMER | SDL_INIT_AUDIO | SDL_INIT_VIDEO | SDL_INIT_GAMECONTROLLER | SDL_INIT_EVENTS ) != 0)
     {
-        fprintf(stderr, "SDL could not initialize\n");
+        const char* error_text = SDL_GetError();
+        fprintf(stderr, "SDL could not initialize: %s\n", error_text);
         return;
     }
 
@@ -221,10 +226,12 @@ void Host::oneTimeSetup(Audio* audio){
 
     joystickCount = SDL_NumJoysticks();
     for (int i = 0; i < joystickCount; i++) {
-		if (SDL_JoystickOpen(i) == NULL) {
-			printf("Failed to open joystick %d!\n", i);
-			quit = 1;
-		}
+        if (SDL_IsGameController(i)) {
+            if (SDL_GameControllerOpen(i) == NULL) {
+                printf("Failed to open game controller %d!\n", i);
+                quit = 1;
+            }
+        }
     }
 
     last_time = 0;
